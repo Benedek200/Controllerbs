@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brawl Stars Xbox Controller</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+        canvas {
+            border: 1px solid #ccc;
+            display: block;
+            margin: 20px auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Brawl Stars Xbox Controller Mapping</h1>
+    <p>Csatlakoztasd az Xbox kontrollered, és használd az alábbi gombokat:</p>
+    <ul>
+        <li><b>Left Joystick:</b> Mozgás</li>
+        <li><b>Right Trigger (RT):</b> Sima lövés</li>
+        <li><b>Left Trigger (LT):</b> Ulti (célzással)</li>
+        <li><b>B gomb:</b> Hypercharge aktiválás</li>
+        <li><b>A gomb:</b> Gadget használat</li>
+    </ul>
+    <canvas id="gameCanvas" width="600" height="400"></canvas>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let player = {
+            x: 300,
+            y: 200,
+            size: 20,
+            color: 'blue',
+        };
+
+        let hyperChargeActive = false;
+        let gadgetUsed = false;
+        let ultActive = false;
+
+        // Kontroller kezelés
+        window.addEventListener("gamepadconnected", (event) => {
+            console.log("Kontroller csatlakoztatva:", event.gamepad);
+            updateController();
+        });
+
+        function updateController() {
+            const gamepads = navigator.getGamepads();
+            const controller = gamepads[0]; // Az első csatlakoztatott kontroller
+            if (!controller) {
+                requestAnimationFrame(updateController);
+                return;
+            }
+
+            // Mozgás (Left Joystick)
+            const leftStickX = controller.axes[0];
+            const leftStickY = controller.axes[1];
+            player.x += leftStickX * 5;
+            player.y += leftStickY * 5;
+
+            // Lövés (Right Trigger + Right Joystick)
+            if (controller.buttons[7].pressed) { // RT lenyomva
+                const rightStickX = controller.axes[2];
+                const rightStickY = controller.axes[3];
+                console.log("Lövés! Irány:", rightStickX, rightStickY);
+            }
+
+            // Ulti (Left Trigger + Right Joystick)
+            if (controller.buttons[6].pressed) { // LT lenyomva
+                ultActive = true;
+                const rightStickX = controller.axes[2];
+                const rightStickY = controller.axes[3];
+                console.log("Ulti töltve! Célzás irány:", rightStickX, rightStickY);
+            } else {
+                ultActive = false;
+            }
+
+            // Hypercharge aktiválás (B gomb)
+            if (controller.buttons[1].pressed && !hyperChargeActive) { // B gomb
+                hyperChargeActive = true;
+                console.log("Hypercharge aktiválva!");
+                setTimeout(() => hyperChargeActive = false, 3000); // 3 másodpercig aktív
+            }
+
+            // Gadget használat (A gomb)
+            if (controller.buttons[0].pressed && !gadgetUsed) { // A gomb
+                gadgetUsed = true;
+                console.log("Gadget használt!");
+                setTimeout(() => gadgetUsed = false, 2000); // 2 másodperc pihenőidő
+            }
+
+            drawPlayer();
+            requestAnimationFrame(updateController);
+        }
+
+        function drawPlayer() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = player.color;
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, player.size, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Ulti jelző
+            if (ultActive) {
+                ctx.strokeStyle = 'red';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(player.x, player.y, player.size + 5, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            // Hypercharge jelző
+            if (hyperChargeActive) {
+                ctx.strokeStyle = 'orange';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(player.x, player.y, player.size + 10, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            // Gadget jelző
+            if (gadgetUsed) {
+                ctx.strokeStyle = 'purple';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(player.x, player.y, player.size + 15, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+        }
+    </script>
+</body>
+</html>
